@@ -122,6 +122,30 @@ The PoC uses the following schema against mock data. **This schema is provisiona
 
 **`src/taxonomy.py` -- `EXPLICIT_MAP`**: a Python dictionary of `{cleaned raw string: canonical tag}`. Currently seeded with 9 canonical tags covering the mock dataset's help-desk/networking/cybersecurity/general-professional skills. To be replaced/extended with NPower's real course and certification names once Robert's data is available.
 
+### 6.1 Output schema
+
+These are what staff actually read (FR-10, FR-12), so their schema is specified here just as concretely as the inputs.
+
+**`output/ranked_matches.csv`** -- one row per student-opportunity pair, all opportunities included for every student, sorted best fit first per student:
+
+| Column | Type | Notes |
+|---|---|---|
+| `student_id` | string | Matches `student_id` in the input |
+| `student_name` | string | |
+| `opportunity_id` | string | Matches `opportunity_id` in the input |
+| `opportunity_title` | string | |
+| `match_score` | float, 0-1 | Fraction of the opportunity's required canonical skills the student meets |
+| `matched_skills` | string | Semicolon-separated canonical tags the student has that the opportunity requires |
+| `missing_skills` | string | Semicolon-separated canonical tags the opportunity requires that the student is missing |
+
+**`output/unmapped_skills.csv`** -- one row per raw skill string that couldn't be confidently mapped (FR-6):
+
+| Column | Type | Notes |
+|---|---|---|
+| `entity_id` | string | The `student_id` or `opportunity_id` the raw skill came from |
+| `raw_skill` | string | The original, unmodified string as it appeared in the input |
+| `cleaned` | string | The string after `clean()`, for debugging why it didn't match |
+
 ## 7. Constraints
 
 - **Team:** Solo project.
@@ -129,6 +153,8 @@ The PoC uses the following schema against mock data. **This schema is provisiona
 - **Time availability:** Author works part-time (19 hrs/week) alongside a full course load; realistic weekly project time is variable and most likely to fall short of 15+ hrs in some weeks (see Project Intake Survey, time-constraint response).
 - **Technology:** Python, pandas, rapidfuzz, Git/GitHub (repository required for the course); no external APIs; no budget for paid tools or hosting.
 - **Data availability:** Real NPower syllabi and partner opportunity requirements are not yet available as of this writing; the taxonomy and CSV schema in Section 6 are provisional until Robert provides them.
+- **Repository visibility:** CISC 4900 requires the project repository to be either publicly visible or shared with the instructor as a collaborator. This directly motivates NFR-10 (Section 5) -- real student data must never be committed, since "private to the team" is not guaranteed to be an option.
+- **Project tracking:** The course requires a maintained, instructor-visible project tracker (e.g. a GitHub Project board) alongside the repository itself.
 
 ## 8. Assumptions and open questions
 
@@ -137,12 +163,16 @@ The PoC uses the following schema against mock data. **This schema is provisiona
 - **Open question:** Will opportunity requirements distinguish "required" from "preferred" skills? The current scoring model (FR-7) treats all listed requirements as equally weighted; this may need to change once real opportunity postings are reviewed.
 - **Open question:** What format will Robert's real data arrive in, and will it need additional cleaning/restructuring beyond what `pipeline.py` currently handles?
 - **Open question:** Final scope of the staff-facing interface (FR-12) -- CLI vs. Streamlit app -- will be decided based on staff feedback gathered during the Pilot.
+- **Open question / known limitation:** The current model treats every opportunity as having unlimited capacity and always being open. A real opportunity has a limited number of seats and a status (open/filled/closed) -- without that data, the tool could rank ten students as strong fits for a single-seat posting with no way to flag that it's already spoken for. Not a blocker for the Pilot (mock data has no capacity concept), but needs resolving before the MVP if Robert's real opportunity data includes capacity or status fields.
 
 ## 9. Acceptance criteria for this phase
 
 Requirements analysis for this phase is complete when:
 
 - [x] Functional and non-functional requirements are documented and traceable to the Project Intake Survey's stated problem, solution, and value-add
-- [x] A provisional data schema exists and is implemented against mock data
+- [x] A provisional data schema exists and is implemented against mock data, including output schemas (Section 6.1)
 - [x] Every implemented functional requirement (FR-1 through FR-11) has automated test coverage or a working, runnable demonstration
+- [x] Real student/opportunity data is protected from accidental commit before any real data exists (NFR-10, `.gitignore` default-deny)
+- [ ] FR-14 (CLI-configurable file paths) and FR-16 (deterministic output) are implemented but not yet covered by an explicit regression test -- both currently rely on the existing test suite passing incidentally rather than testing the behavior directly. Add tests before Sprint 1.
+- [ ] FR-15 (graceful handling of malformed rows) is documented but not yet implemented -- scoped for Sprint 1, not a blocker for this phase
 - [ ] Requirements are reviewed against NPower's real data once received, and this document is revised accordingly (tracked as a follow-up task, not a blocker for this phase)
