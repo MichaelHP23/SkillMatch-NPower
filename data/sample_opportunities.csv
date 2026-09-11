@@ -1,0 +1,6 @@
+opportunity_id,partner_org,title,required_skills
+O001,TechCorp Solutions,Help Desk Technician Intern,"CompTIA A+; Customer Service; Windows OS Administration"
+O002,NetLine Systems,Network Support Apprentice,"CompTIA Network+; Linux Fundamentals"
+O003,SecureWave Inc,Jr. Security Analyst,"CompTIA Security+; Linux Fundamentals; Network+"
+O004,CloudFirst Partners,Cloud Support Associate,"AWS Cloud Practitioner; Linux Fundamentals"
+O005,BrightPath Retail,IT Support Associate,"CompTIA A+; Microsoft Excel; Customer Service"
