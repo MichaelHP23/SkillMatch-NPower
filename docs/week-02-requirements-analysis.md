@@ -14,6 +14,15 @@ NPower placement staff currently match students to partner internship, apprentic
 
 This project builds a tool that normalizes both sides of that comparison against one canonical skills taxonomy, scores the overlap between a student's skills and an opportunity's requirements, and produces a ranked, explainable list of best-fit opportunities per student -- including the specific skills that are missing for a near-miss match.
 
+### 1.1 Success criteria
+
+This is a capstone project, not a production launch, so success is judged qualitatively rather than against a hard KPI target. The tool succeeds if, by the Pilot (weeks 7-9):
+
+- A staff member can get a ranked, explainable opportunity list for any given student in seconds, replacing a manual spreadsheet cross-reference that currently takes real staff time per student.
+- Every ranked result shows *why* it ranked where it did (matched skills and specific missing skills), not just a score -- so staff can trust it without re-verifying by hand.
+- The taxonomy correctly resolves the large majority of real skill-name variants staff actually encounter in NPower's data (measured directly: the size of `output/unmapped_skills.csv` relative to total skills processed, once run against real data).
+- Robert and at least one other staff member have run the tool themselves and confirmed the ranked output matches their own judgment for a sample of students.
+
 ## 2. Scope
 
 ### 2.1 In scope
@@ -25,6 +34,7 @@ This project builds a tool that normalizes both sides of that comparison against
 - Producing a ranked list of opportunities per student, sorted best fit first
 - Logging any raw skill string the taxonomy cannot confidently map, so the taxonomy can be extended
 - A lightweight, non-developer-facing way to run the tool and view results (interface finalized during the Pilot phase, weeks 7-9)
+- Repeated re-runs against updated student/opportunity data over time -- not a one-time batch job; staff should be able to re-run it as new cohorts or postings come in
 
 ### 2.2 Out of scope
 
@@ -33,6 +43,11 @@ This project builds a tool that normalizes both sides of that comparison against
 - Live/hosted production infrastructure with authenticated user accounts (not needed for a script/report-based tool; see NFR-6)
 - Integration with any external skills-taxonomy or labor-market API (none identified as necessary; see Section 6, Assumptions)
 - Modifying any existing NPower system -- this is a from-scratch, standalone tool
+- The application/interview/onboarding workflow after a match is identified -- this tool ends at "here's a ranked list," it does not track applications, interviews, or offers
+- Skill proficiency or depth -- matching is presence/absence of a canonical skill (a student "has" CompTIA A+ or doesn't); the tool does not model how strong a student is at a given skill
+- Non-skill matching factors -- geographic proximity, scheduling/availability, and student interest or preference are not part of the score; the ranked list reflects skill fit only, not a complete placement recommendation
+- Legal/compliance eligibility checks -- work authorization, background checks, or other placement eligibility requirements are assumed to be handled by NPower's existing process, not by this tool
+- General-purpose or multi-organization use -- this is a tool built specifically around NPower's taxonomy and partner structure, not a reusable product for other workforce-development organizations
 
 ## 3. Stakeholders and users
 
@@ -41,6 +56,8 @@ This project builds a tool that normalizes both sides of that comparison against
 | NPower placement staff | Career coaches / placement coordinators | Primary end-user. Runs the tool against current student and opportunity data; acts on its ranked output. |
 | NPower students | Enrolled in help desk, networking, cybersecurity, and related programs | Indirect beneficiary. Receives faster, more accurate placement recommendations; does not interact with the tool directly. |
 | Robert (NPower capstone contact) | Domain expert / data source | Supplies real course syllabi, certification lists, and partner opportunity requirements; validates taxonomy accuracy during the Pilot. |
+| Partner organizations | Employers posting internships/apprenticeships/jobs through NPower | Indirect stakeholder, not a direct user. Benefit from better-qualified candidate shortlists; harmed if poor matching wastes their time on unqualified referrals. Never interacts with the tool directly -- their requirements only reach it as data staff enter. |
+| NPower program leadership | Manages the partnership pipeline and reports on placement outcomes (e.g. to funders) | Indirect stakeholder. Not a direct user, but relies on accurate, explainable matching to support placement-rate reporting; a factor in why explainability (NFR-1) matters beyond individual staff trust. |
 | Project author (Michael Pink) | Capstone student / developer | Designs, builds, tests, and documents the tool. |
 | Course instructor | CISC 4900 | Evaluates the project against course milestones (PoC, Prototype, Pilot, MVP, MDP). |
 
@@ -63,6 +80,9 @@ Each requirement is tagged with its current status: **Implemented** (working in 
 | FR-11 | The taxonomy shall be maintained as data (not hardcoded logic) so it can be extended with new skill variants without changing the normalization or scoring code. | Implemented |
 | FR-12 | The system shall provide a way for a non-developer NPower staff member to run the matching process and view results without editing code. | Planned (Pilot, weeks 7-9) |
 | FR-13 | The system shall allow a staff member to re-run the matching process against updated student or opportunity data without developer involvement. | Planned (MVP, weeks 10-12) |
+| FR-14 | The system shall accept alternate input file paths and output file paths as runtime arguments, rather than requiring code changes to point at different data. | Implemented |
+| FR-15 | The system shall handle a malformed or incomplete data row (missing required column, empty skills field) without crashing the entire run -- at minimum, skip and log the offending row so the rest of the batch still completes. | Planned (Sprint 1, weeks 5-6) |
+| FR-16 | Given identical input data, the system shall produce identical ranked output on every run (deterministic scoring and tie-breaking), so results are reproducible and testable. | Implemented |
 
 ## 5. Non-functional requirements
 
@@ -76,6 +96,8 @@ Each requirement is tagged with its current status: **Implemented** (working in 
 | NFR-6 (No live-traffic requirement) | The system does not need to support concurrent, authenticated, real-time users; batch/report-based operation is sufficient. | Confirmed in the Project Intake Survey -- no live registered userbase is planned during the capstone. |
 | NFR-7 (Data privacy) | Student records must stay within the project repository and local/staff-controlled storage; no student data is to be sent to an external API or third-party service. | Student PII (names, coursework) is sensitive; no external API is in scope (Section 2.2). |
 | NFR-8 (Testability) | Core normalization and scoring logic must be covered by automated unit tests. | Confirmed with pytest coverage in the current PoC (`tests/`). |
+| NFR-9 (Performance) | A full pipeline run should complete well under a minute on a standard laptop at NPower's expected data volume (on the order of hundreds of students, dozens of opportunities). No caching/optimization work is required now; revisit if real volume turns out to be significantly larger. | The fuzzy-match fallback in `taxonomy.py` re-scores against the full `EXPLICIT_MAP` for every unmapped skill with no caching -- fine at this scale, but worth a conscious decision rather than an unexamined one. |
+| NFR-10 (Repository data privacy) | Real NPower student and opportunity data (once received from Robert) must never be committed to the GitHub repository, whether the repo is public or shared with the instructor as a collaborator. Only synthetic/mock data belongs in tracked files. | The course requires a publicly visible repo or instructor access (per the intake survey); real student PII in `data/` would otherwise be exposed. This is the highest-priority NFR to get right before real data arrives. |
 
 ## 6. Data requirements
 
