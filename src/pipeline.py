@@ -7,16 +7,20 @@ Run against the mock data in data/ out of the box:
 Once real data is available from NPower, point --students / --opportunities
 at the real exports -- the normalization/scoring logic doesn't need to change,
 only the taxonomy's EXPLICIT_MAP (see src/taxonomy.py) may need extending.
+
+As of the System Architecture pass (weeks 3-4), this loads both CSVs into a
+SQLite database (db/schema.sql) and computes matches there via src/db.py,
+rather than staying purely in-memory with pandas. The CSV inputs and outputs
+are unchanged in shape -- this is what lets the same data also be queried
+directly (by the Streamlit app in app.py, or by staff via plain SQL) instead
+of only existing as a point-in-time export.
 """
 from __future__ import annotations
 
 import argparse
 from pathlib import Path
 
-import pandas as pd
-
-from src.scoring import rank_opportunities_for_student
-from src.taxonomy import normalize_skill_list
+from src.db import DEFAULT_DB_PATH, build_database, get_ranked_matches_df, get_unmapped_skills_df
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 DEFAULT_STUDENTS_CSV = PROJECT_ROOT / "data" / "sample_students.csv"
@@ -25,77 +29,24 @@ DEFAULT_OUTPUT_CSV = PROJECT_ROOT / "output" / "ranked_matches.csv"
 DEFAULT_UNMAPPED_CSV = PROJECT_ROOT / "output" / "unmapped_skills.csv"
 
 
-def _split_skills(cell) -> list[str]:
-    if pd.isna(cell):
-        return []
-    return [s.strip() for s in str(cell).split(";") if s.strip()]
-
-
-def _normalize_entity_skills(df: pd.DataFrame, id_col: str, skills_col: str):
-    """Return ({entity_id: set(canonical_tags)}, [unmapped-skill log rows])."""
-    tag_sets: dict[str, set[str]] = {}
-    unmapped_rows = []
-
-    for _, row in df.iterrows():
-        entity_id = row[id_col]
-        results = normalize_skill_list(_split_skills(row[skills_col]))
-
-        tags = set()
-        for r in results:
-            if r.canonical_tag:
-                tags.add(r.canonical_tag)
-            else:
-                unmapped_rows.append(
-                    {"entity_id": entity_id, "raw_skill": r.raw, "cleaned": r.cleaned}
-                )
-        tag_sets[entity_id] = tags
-
-    return tag_sets, unmapped_rows
-
-
 def run_pipeline(
     students_csv: Path,
     opportunities_csv: Path,
     output_csv: Path,
     unmapped_csv: Path,
-) -> pd.DataFrame:
-    students_df = pd.read_csv(students_csv)
-    opportunities_df = pd.read_csv(opportunities_csv)
+    db_path: Path = DEFAULT_DB_PATH,
+):
+    conn = build_database(students_csv, opportunities_csv, db_path)
 
-    student_tags, student_unmapped = _normalize_entity_skills(
-        students_df, "student_id", "skills"
-    )
-    opportunity_tags, opp_unmapped = _normalize_entity_skills(
-        opportunities_df, "opportunity_id", "required_skills"
-    )
-
-    all_rows = []
-    for _, srow in students_df.iterrows():
-        sid = srow["student_id"]
-        for r in rank_opportunities_for_student(sid, student_tags[sid], opportunity_tags):
-            opp_title = opportunities_df.loc[
-                opportunities_df["opportunity_id"] == r.opportunity_id, "title"
-            ].iloc[0]
-            all_rows.append(
-                {
-                    "student_id": r.student_id,
-                    "student_name": srow["name"],
-                    "opportunity_id": r.opportunity_id,
-                    "opportunity_title": opp_title,
-                    "match_score": r.score,
-                    "matched_skills": "; ".join(r.matched_skills),
-                    "missing_skills": "; ".join(r.missing_skills),
-                }
-            )
-
-    output_df = pd.DataFrame(all_rows)
+    output_df = get_ranked_matches_df(conn)
     output_csv.parent.mkdir(parents=True, exist_ok=True)
     output_df.to_csv(output_csv, index=False)
 
-    unmapped_df = pd.DataFrame(student_unmapped + opp_unmapped)
+    unmapped_df = get_unmapped_skills_df(conn)
     unmapped_csv.parent.mkdir(parents=True, exist_ok=True)
     unmapped_df.to_csv(unmapped_csv, index=False)
 
+    conn.close()
     return output_df
 
 
@@ -105,10 +56,12 @@ def main():
     parser.add_argument("--opportunities", type=Path, default=DEFAULT_OPPORTUNITIES_CSV)
     parser.add_argument("--output", type=Path, default=DEFAULT_OUTPUT_CSV)
     parser.add_argument("--unmapped", type=Path, default=DEFAULT_UNMAPPED_CSV)
+    parser.add_argument("--db", type=Path, default=DEFAULT_DB_PATH, help="SQLite file to build/overwrite")
     args = parser.parse_args()
 
-    output_df = run_pipeline(args.students, args.opportunities, args.output, args.unmapped)
+    output_df = run_pipeline(args.students, args.opportunities, args.output, args.unmapped, args.db)
     print(f"Wrote {len(output_df)} ranked student-opportunity rows to {args.output}")
+    print(f"Database written to {args.db}")
     if len(output_df):
         print(f"Unmapped skills (if any) logged to {args.unmapped}")
 

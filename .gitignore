@@ -6,6 +6,10 @@ output/*.csv
 !output/.gitkeep
 .DS_Store
 
+# The built database is generated output (like output/*.csv) and, once real
+# data is loaded, would contain real student PII -- never commit it (NFR-10).
+db/*.db
+
 # Real NPower student/opportunity data must never be committed (NFR-10,
 # docs/week-02-requirements-analysis.md). Default-deny everything in data/
 # and only allow-list the known-safe mock files, regardless of what a real

@@ -78,7 +78,7 @@ Each requirement is tagged with its current status: **Implemented** (working in 
 | FR-9 | For each student, the system shall produce a ranked list of all opportunities sorted by descending match score. | Implemented |
 | FR-10 | The system shall export the ranked results to a CSV report. | Implemented |
 | FR-11 | The taxonomy shall be maintained as data (not hardcoded logic) so it can be extended with new skill variants without changing the normalization or scoring code. | Implemented |
-| FR-12 | The system shall provide a way for a non-developer NPower staff member to run the matching process and view results without editing code. | Planned (Pilot, weeks 7-9) |
+| FR-12 | The system shall provide a way for a non-developer NPower staff member to run the matching process and view results without editing code. | Implemented (Streamlit app, `app.py` -- see [Week 3-4](week-03-04-system-architecture.md)) |
 | FR-13 | The system shall allow a staff member to re-run the matching process against updated student or opportunity data without developer involvement. | Planned (MVP, weeks 10-12) |
 | FR-14 | The system shall accept alternate input file paths and output file paths as runtime arguments, rather than requiring code changes to point at different data. | Implemented |
 | FR-15 | The system shall handle a malformed or incomplete data row (missing required column, empty skills field) without crashing the entire run -- at minimum, skip and log the offending row so the rest of the batch still completes. | Planned (Sprint 1, weeks 5-6) |
@@ -102,6 +102,8 @@ Each requirement is tagged with its current status: **Implemented** (working in 
 ## 6. Data requirements
 
 The PoC uses the following schema against mock data. **This schema is provisional** and will be revised once real exports from NPower are available -- likely differences include additional student/opportunity metadata (cohort, program track, location, posting deadline) and possibly a wider or structured skills field.
+
+CSV remains the *input* format described below. As of [Week 3-4](week-03-04-system-architecture.md), inputs are loaded into a normalized SQLite database (`db/schema.sql`) that the pipeline and Streamlit app both read from -- see that document for the full ERD.
 
 **`data/sample_students.csv`**
 
@@ -162,7 +164,7 @@ These are what staff actually read (FR-10, FR-12), so their schema is specified 
 - **Assumption:** Student and opportunity data will continue to arrive as CSV/Excel exports rather than through a live system integration.
 - **Open question:** Will opportunity requirements distinguish "required" from "preferred" skills? The current scoring model (FR-7) treats all listed requirements as equally weighted; this may need to change once real opportunity postings are reviewed.
 - **Open question:** What format will Robert's real data arrive in, and will it need additional cleaning/restructuring beyond what `pipeline.py` currently handles?
-- **Open question:** Final scope of the staff-facing interface (FR-12) -- CLI vs. Streamlit app -- will be decided based on staff feedback gathered during the Pilot.
+- **Resolved (originally an open question):** Final scope of the staff-facing interface (FR-12) was going to be decided based on staff feedback during the Pilot, but my professor suggested looking into a UI and a real data-storage layer earlier than planned. Decided in [Week 3-4](week-03-04-system-architecture.md): Streamlit for the interface, SQLite for storage.
 - **Open question / known limitation:** The current model treats every opportunity as having unlimited capacity and always being open. A real opportunity has a limited number of seats and a status (open/filled/closed) -- without that data, the tool could rank ten students as strong fits for a single-seat posting with no way to flag that it's already spoken for. Not a blocker for the Pilot (mock data has no capacity concept), but needs resolving before the MVP if Robert's real opportunity data includes capacity or status fields.
 
 ## 9. Acceptance criteria for this phase

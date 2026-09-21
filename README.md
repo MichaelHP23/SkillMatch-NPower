@@ -36,16 +36,26 @@ capstone contact, Robert) will replace the mock data once available -- the
 taxonomy in `src/taxonomy.py` will need to be extended to cover NPower's
 actual course/cert names, but the rest of the pipeline shouldn't need to change.
 
+Student and opportunity CSVs are loaded into a small SQLite database
+(`db/schema.sql`) that the pipeline and the Streamlit UI both query -- see
+[`docs/week-03-04-system-architecture.md`](docs/week-03-04-system-architecture.md)
+for the full schema (ERD), module structure, and sequence diagram.
+
 ## Project layout
 
 ```
 src/
   taxonomy.py   # canonical skill tags + raw-string -> tag normalization
   scoring.py    # overlap scoring + per-student ranking
-  pipeline.py   # ingest CSVs -> normalize -> score -> rank -> export
+  db.py         # SQLite persistence: load CSVs, seed taxonomy, compute matches
+  pipeline.py   # CLI: ingest CSVs -> build db -> normalize -> score -> rank -> export
+app.py          # Streamlit staff-facing UI (upload CSVs, run matching, browse/download results)
+db/
+  schema.sql    # SQLite schema (tables + views)
 data/           # input CSVs (mock data for now)
 output/         # generated ranked_matches.csv + unmapped_skills.csv (gitignored)
-tests/          # pytest unit tests for taxonomy + scoring
+tests/          # pytest unit tests for taxonomy, scoring, and db
+docs/           # weekly capstone journal (requirements, architecture, etc.)
 ```
 
 ## Setup
@@ -54,22 +64,32 @@ tests/          # pytest unit tests for taxonomy + scoring
 pip install -r requirements.txt
 ```
 
-## Run the pipeline
+## Run the pipeline (CLI)
 
 ```bash
 python -m src.pipeline
 ```
 
-Writes `output/ranked_matches.csv` (every student, every opportunity, sorted
-best-fit-first per student) and `output/unmapped_skills.csv` (any raw skill
-string the taxonomy couldn't confidently map -- a to-do list for extending
-`EXPLICIT_MAP`).
+Builds/overwrites `db/skills_match.db`, then writes `output/ranked_matches.csv`
+(every student, every opportunity, sorted best-fit-first per student) and
+`output/unmapped_skills.csv` (any raw skill string the taxonomy couldn't
+confidently map -- a to-do list for extending `EXPLICIT_MAP`).
 
 To run against different data:
 
 ```bash
 python -m src.pipeline --students path/to/real_students.csv --opportunities path/to/real_opportunities.csv
 ```
+
+## Run the staff-facing UI (Streamlit)
+
+```bash
+streamlit run app.py
+```
+
+Lets a non-developer staff member upload student/opportunity CSVs (or use the
+built-in sample data), run the matcher, browse results per student, and
+download `ranked_matches.csv` -- no code required (FR-12).
 
 ## Run the tests
 
