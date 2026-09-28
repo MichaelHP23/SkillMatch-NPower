@@ -135,7 +135,8 @@ These are what staff actually read (FR-10, FR-12), so their schema is specified 
 | `student_id` | string | Matches `student_id` in the input |
 | `student_name` | string | |
 | `opportunity_id` | string | Matches `opportunity_id` in the input |
-| `opportunity_title` | string | |
+| `opportunity_title` | string | Job name |
+| `partner_org` | string | Partner organization offering the opportunity |
 | `match_score` | float, 0-1 | Fraction of the opportunity's required canonical skills the student meets |
 | `matched_skills` | string | Semicolon-separated canonical tags the student has that the opportunity requires |
 | `missing_skills` | string | Semicolon-separated canonical tags the opportunity requires that the student is missing |
@@ -145,6 +146,8 @@ These are what staff actually read (FR-10, FR-12), so their schema is specified 
 | Column | Type | Notes |
 |---|---|---|
 | `entity_id` | string | The `student_id` or `opportunity_id` the raw skill came from |
+| `entity_name` | string | Student name or opportunity (job) title for that ID |
+| `source` | string | `student` or `opportunity` |
 | `raw_skill` | string | The original, unmodified string as it appeared in the input |
 | `cleaned` | string | The string after `clean()`, for debugging why it didn't match |
 

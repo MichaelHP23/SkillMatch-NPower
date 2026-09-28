@@ -78,11 +78,15 @@ CREATE TABLE IF NOT EXISTS match_skill_status (
 
 -- Convenience view standing in for the old output/unmapped_skills.csv (FR-6).
 CREATE VIEW IF NOT EXISTS unmapped_skills AS
-    SELECT student_id AS entity_id, 'student' AS source, raw_skill, cleaned
-    FROM student_skills WHERE tag IS NULL
+    SELECT ss.student_id AS entity_id, s.name AS entity_name, 'student' AS source,
+           ss.raw_skill, ss.cleaned
+    FROM student_skills ss JOIN students s ON s.student_id = ss.student_id
+    WHERE ss.tag IS NULL
     UNION ALL
-    SELECT opportunity_id AS entity_id, 'opportunity' AS source, raw_skill, cleaned
-    FROM opportunity_requirements WHERE tag IS NULL;
+    SELECT r.opportunity_id AS entity_id, o.title AS entity_name, 'opportunity' AS source,
+           r.raw_skill, r.cleaned
+    FROM opportunity_requirements r JOIN opportunities o ON o.opportunity_id = r.opportunity_id
+    WHERE r.tag IS NULL;
 
 -- Convenience view standing in for the old output/ranked_matches.csv (FR-9, FR-10),
 -- with matched/missing skills aggregated back into semicolon-joined strings
@@ -93,6 +97,7 @@ CREATE VIEW IF NOT EXISTS ranked_matches AS
         s.name AS student_name,
         m.opportunity_id,
         o.title AS opportunity_title,
+        o.partner_org,
         m.score AS match_score,
         (SELECT GROUP_CONCAT(tag, '; ') FROM match_skill_status
             WHERE student_id = m.student_id AND opportunity_id = m.opportunity_id

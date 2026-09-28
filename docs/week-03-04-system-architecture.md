@@ -216,3 +216,10 @@ sequenceDiagram
   known gap to close before MVP if real data includes it.
 - Sprint 1 items from Week 2 (FR-15 malformed-row handling, explicit tests for FR-14/
   FR-16) are unaffected and still outstanding.
+- **Visualization gap (found after the Week 3-4 push, now fixed):** the Streamlit
+  per-student view showed only student names and job titles, with no student IDs,
+  opportunity IDs, or partner orgs, and `unmapped_skills` showed bare IDs with no
+  name. `ranked_matches` now includes `partner_org`, `unmapped_skills` includes
+  `entity_name`, and the app's student picker and per-student table show IDs
+  alongside names. Next step: check any new charts/views for the same issue
+  before adding them.

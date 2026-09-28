@@ -87,6 +87,7 @@ def test_unmapped_skill_appears_in_view(conn):
     unmapped = get_unmapped_skills_df(conn)
     assert list(unmapped["raw_skill"]) == ["Underwater Basket Weaving"]
     assert list(unmapped["entity_id"]) == ["S1"]
+    assert list(unmapped["entity_name"]) == ["A"]
 
 
 def test_build_database_matches_pipeline_row_count(tmp_path):
@@ -104,3 +105,12 @@ def test_refresh_matches_is_deterministic(tmp_path):
     second = get_ranked_matches_df(conn).sort_values(["student_id", "opportunity_id"]).reset_index(drop=True)
     conn.close()
     pd.testing.assert_frame_equal(first, second)
+
+
+def test_ranked_matches_carry_ids_and_names(tmp_path):
+    conn = build_database(STUDENTS_CSV, OPPORTUNITIES_CSV, tmp_path / "cols.db")
+    df = get_ranked_matches_df(conn)
+    conn.close()
+    for col in ["student_id", "student_name", "opportunity_id", "opportunity_title", "partner_org"]:
+        assert col in df.columns
+        assert df[col].notna().all()

@@ -85,13 +85,16 @@ else:
     student_label = st.selectbox(
         "Student",
         options=student_options["student_id"],
-        format_func=lambda sid: student_options.loc[student_options["student_id"] == sid, "student_name"].iloc[0],
+        format_func=lambda sid: f"{sid} - {student_options.loc[student_options['student_id'] == sid, 'student_name'].iloc[0]}",
     )
     student_view = ranked_df[ranked_df["student_id"] == student_label].sort_values(
         "match_score", ascending=False
     )
     st.dataframe(
-        student_view[["opportunity_title", "match_score", "matched_skills", "missing_skills"]],
+        student_view[
+            ["student_id", "student_name", "opportunity_id", "opportunity_title", "partner_org",
+             "match_score", "matched_skills", "missing_skills"]
+        ],
         use_container_width=True,
         hide_index=True,
         column_config={
