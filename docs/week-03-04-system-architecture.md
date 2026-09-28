@@ -2,6 +2,7 @@
 
 **Status:** Complete
 **Objective (per syllabus):** Flesh out ideas with DB schema, UML diagrams, and API endpoints.
+**Work log:** [Week 3](#week-3-914---920----1125-hours) · [Week 4](#week-4-921---927----65-hours)
 
 This work happened earlier than the syllabus's nominal Prototype-phase placement would
 suggest: my professor reviewed the PoC and specifically suggested I look into a real
