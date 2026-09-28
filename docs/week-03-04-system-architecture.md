@@ -223,3 +223,65 @@ sequenceDiagram
   `entity_name`, and the app's student picker and per-student table show IDs
   alongside names. Next step: check any new charts/views for the same issue
   before adding them.
+
+---
+
+## 7. Work log
+
+Taken from the Tasks tab of my CISC 4900 time log. Dates, hours, and categories match the log; wording is lightly cleaned up for typos.
+
+### Week 3 (9/14 - 9/20) -- 11.25 hours
+
+**9/14/2026 -- Supervisor Discussion (1.5 h)**
+- **Task:** Met with Prof. Katherine Chuang for a group discussion. She suggested I implement a UI as well as a way of storing data.
+- **Challenges / next steps:** Research her suggestions for my project.
+- **Reflection:** Her suggestions were helpful and covered things I hadn't taken into consideration.
+
+**9/15/2026 -- Research, Training, Learning (0.5 h)**
+- **Task:** Researched ways to implement Prof. Chuang's data-storage suggestion; decided to go with SQLite.
+- **Challenges / next steps:** Research ways of implementing a user interface for the project.
+- **Reflection:** This was more of a quick look-up on how I could store data. Good search.
+
+**9/16/2026 -- Research, Training, Learning (0.5 h)**
+- **Task:** Researched ways to implement Prof. Chuang's UI suggestion; decided to go with Streamlit.
+- **Challenges / next steps:** Coding.
+- **Reflection:** Same as the last update.
+
+**9/18/2026 -- Coding (4.0 h)**
+- **Task:** Did my first set of coding for the UI of this project.
+- **Challenges / next steps:** After implementing the UI I realized that when visualized, some important information is missing, such as student IDs and job names. Next step is to fix that.
+- **Reflection:** Minimal issues in coding. AI assisted in this section, as I had done something similar with Gradio but not fully hands-on or from scratch.
+
+**9/19/2026 -- Coding (4.0 h)**
+- **Task:** Did my first set of coding for the SQL storage of this project.
+- **Reflection:** It was tough picking between SQLite and PostgreSQL, but all in all SQLite was the best choice.
+
+**9/20/2026 -- Documentation (0.75 h)**
+- **Task:** Updated documentation for weekly updates in GitHub.
+- **Challenges / next steps:** More coding.
+- **Reflection:** Good progress so far; I might be able to finish early.
+
+### Week 4 (9/21 - 9/27) -- 6.5 hours
+
+**9/22/2026 -- Research, Training, Learning (2.0 h)**
+- **Task:** Researched effective ways to fix the visual bugs of the project.
+- **Challenges / next steps:** Implement the research found.
+- **Reflection:** Found a simple fix.
+
+**9/24/2026 -- Research, Training, Learning (2.0 h)**
+- **Task:** A main aspect of this project is a pipeline for not just partner opportunities but also courses. Researched ways to implement this.
+- **Challenges / next steps:** Implement this.
+- **Reflection:** I only have the syllabus for courses; if it's not enough I will ask my supervisor for more info.
+
+**9/25/2026 -- Testing & Debugging (1.5 h)**
+- **Task:** Implemented the fixes discussed on 9/22/26.
+- **Challenges / next steps:** Implement the issue raised on 9/24/26.
+- **Reflection:** Not much needed to change and it was a pretty simple fix.
+
+**9/26/2026 -- Documentation (1.0 h)**
+- **Task:** Documented the changes made in the GitHub repo.
+- **Challenges / next steps:** Implement the issue raised on 9/24/26.
+- **Reflection:** I will implement the changes raised on 9/24/26 next week.
+
+**Carried into Week 5:** implement the course pipeline researched on 9/24 (matching students to NPower courses, not just partner opportunities).
+

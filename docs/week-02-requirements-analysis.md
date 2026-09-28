@@ -181,3 +181,42 @@ Requirements analysis for this phase is complete when:
 - [ ] FR-14 (CLI-configurable file paths) and FR-16 (deterministic output) are implemented but not yet covered by an explicit regression test -- both currently rely on the existing test suite passing incidentally rather than testing the behavior directly. Add tests before Sprint 1.
 - [ ] FR-15 (graceful handling of malformed rows) is documented but not yet implemented -- scoped for Sprint 1, not a blocker for this phase
 - [ ] Requirements are reviewed against NPower's real data once received, and this document is revised accordingly (tracked as a follow-up task, not a blocker for this phase)
+
+---
+
+## 10. Work log
+
+Taken from the Tasks tab of my CISC 4900 time log. Dates, hours, and categories match the log; wording is lightly cleaned up for typos.
+
+### Week 2 (9/7 - 9/13) -- 10 hours
+
+**9/11/2026 -- Research, Training, Learning (1.5 h)**
+- **Task:** Deep-dive research on ways to solve the issue at NPower: YouTube videos, similar code, and AI assistance to help find the solution needed.
+- **Challenges / next steps:** Start my first set of design plans for the project.
+- **Reflection:** This research was really helpful and should make the designs straightforward.
+
+**9/11/2026 -- Design (2.5 h)**
+- **Task:** Designed how to address the main issue and how the code will solve it, along with handwritten illustrations of where everything happens. The main goal was to simplify the matchmaking process and come up with short drafts of code.
+- **Challenges / next steps:** Document and start coding. One challenge is not having student data yet, but I can use made-up test data in the meantime.
+- **Reflection:** Making a mock design of everything took longer than I thought, but now I have a clear path of where to go.
+
+**9/11/2026 -- Documentation (1.0 h)**
+- **Task:** Set up my GitHub repo with my assignments and timelines of what needs to be done.
+- **Challenges / next steps:** Start coding.
+- **Reflection:** This was good, as it showed me and my supervisor when and what needs to be done.
+
+**9/11/2026 -- Research, Training, Learning (0.5 h)**
+- **Task:** Received NPower's courses/syllabi and did a quick review of what they offer.
+- **Challenges / next steps:** Start coding.
+- **Reflection:** The syllabus was very helpful and much-needed context.
+
+**9/11/2026 -- Coding (4.0 h)**
+- **Task:** Built my first set of code in Python; the first drafts were successful.
+- **Challenges / next steps:** Meet with my supervisor and implement the NPower courses.
+- **Reflection:** Coding was simple with minimal issues, and having AI teach me new concepts where I got stuck along the way was very helpful.
+
+**9/12/2026 -- Supervisor Discussion (0.5 h)**
+- **Task:** Met with my supervisor, who was impressed with what I have so far.
+- **Challenges / next steps:** Continue coding, create a front end, find a way to store data, and send the GitHub repo to him.
+- **Reflection:** We discussed what the code does and everything went well.
+

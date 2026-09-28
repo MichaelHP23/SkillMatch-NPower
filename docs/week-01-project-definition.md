@@ -51,3 +51,27 @@ No existing product was found that solves this exact problem (skills-taxonomy-ba
 ## 6. Next step
 
 Week 2 formalizes the objectives and scope above into concrete functional and non-functional requirements -- see [`week-02-requirements-analysis.md`](week-02-requirements-analysis.md).
+
+---
+
+## 7. Work log
+
+Taken from the Tasks tab of my CISC 4900 time log. Dates, hours, and categories match the log; wording is lightly cleaned up for typos.
+
+### Week 1 (8/31 - 9/6) -- 2.5 hours
+
+**9/1/2026 -- Research, Training, Learning (0.5 h)**
+- **Task:** Reviewed the course on Microsoft Teams and started the intake survey; reached out to my supervisor to touch base on the project.
+- **Challenges / next steps:** I couldn't complete past page 3 of the intake survey -- I need to discuss more with my supervisor first.
+- **Reflection:** After completing 2 pages of the intake survey I realized I couldn't move forward with it. This is where I was stuck and needed more guidance from my supervisor.
+
+**9/4/2026 -- Supervisor Discussion (1.5 h)**
+- **Task:** Discussed with my supervisor, Robert Vaughn, the scope of what exactly the project will be about, and completed the intake survey.
+- **Challenges / next steps:** Robert will send over NPower data (courses and syllabi) so I can begin my first coding drafts.
+- **Reflection:** This was really needed. A lot of insightful info about NPower's current situation was discussed, which will help me do much-needed research into the project.
+
+**9/4/2026 -- Research, Training, Learning (0.5 h)**
+- **Task:** After the talk with my supervisor, did research and brainstorming on ways I could tackle the issue at NPower.
+- **Challenges / next steps:** Do more research and start my first coding drafts after receiving NPower data.
+- **Reflection:** Using AI to help brainstorm and research was really helpful -- it helped me understand the main issues at hand and how I could help resolve them.
+
