@@ -17,3 +17,4 @@ db/*.db
 data/*
 !data/sample_students.csv
 !data/sample_opportunities.csv
+!data/courses.csv

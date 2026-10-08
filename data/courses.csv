@@ -1,0 +1,12 @@
+course_id,name,weeks,hours,prerequisites,skills_taught
+C01,Tech Fundamentals,20,460,,"CompTIA Tech+; CompTIA A+; Windows OS Administration; Linux Fundamentals; Help Desk Support; Customer Service"
+C02,IT Support Specialist,18,344,,"CompTIA Tech+; Microsoft Azure Fundamentals; Help Desk Support"
+C03,Tech Fundamentals + Data Analytics,18,,,"Google IT Support Certificate; Microsoft Excel; SQL; Microsoft Power BI; Tableau; Customer Service"
+C04,NextGen IT Data Analytics,11,90,,"Microsoft Excel; SQL; Microsoft Power BI; Tableau"
+C05,Networking & Systems Administration,26,,CompTIA A+,"CompTIA Network+; CompTIA Linux+; Linux Fundamentals; Azure AI Fundamentals"
+C06,Cyber Security,18,360,CompTIA Network+,"CompTIA Security+; Linux Fundamentals"
+C07,AWS Cloud Practitioner,12,72,,AWS Cloud Practitioner
+C08,AWS Solutions Architect,10,60,AWS Cloud Practitioner,AWS Solutions Architect
+C09,A.I. Prompt Engineering & Automation,20,120,,"Prompt Engineering; Microsoft 365 Copilot; Microsoft Power Platform Fundamentals"
+C10,Met Council MS 365 & Copilot,12,76,,"Microsoft 365 Copilot; Microsoft Power Platform Fundamentals"
+C11,Path2Tech App Development,16,129,,"HTML & CSS; JavaScript; React; Express & MongoDB"

@@ -9,7 +9,8 @@ PRAGMA foreign_keys = ON;
 -- One row per student.
 CREATE TABLE IF NOT EXISTS students (
     student_id TEXT PRIMARY KEY,
-    name       TEXT NOT NULL
+    name       TEXT NOT NULL,
+    completed_courses TEXT  -- course ids from data/courses.csv, joined with "; "
 );
 
 -- One row per partner opportunity.

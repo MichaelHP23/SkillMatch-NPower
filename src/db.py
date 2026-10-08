@@ -14,6 +14,7 @@ from pathlib import Path
 
 import pandas as pd
 
+from src.courses import DEFAULT_COURSES_CSV, find_course, load_courses, rank_courses, split_list
 from src.scoring import score_match
 from src.taxonomy import CANONICAL_TAGS, EXPLICIT_MAP, normalize_skill_list
 
@@ -60,15 +61,40 @@ def _split_skills(cell) -> list[str]:
     return [s.strip() for s in str(cell).split(";") if s.strip()]
 
 
-def load_students(conn: sqlite3.Connection, students_df: pd.DataFrame) -> None:
+def load_students(conn: sqlite3.Connection, students_df: pd.DataFrame, courses=None) -> None:
+    """Load students. If the CSV has a completed_courses column, every skill
+    those courses teach is added to the student's skills, so finishing a
+    course counts the same as listing its skills by hand."""
+    if courses is None:
+        courses = []
     conn.execute("DELETE FROM student_skills")
     conn.execute("DELETE FROM students")
     for _, row in students_df.iterrows():
+        raw_skills = _split_skills(row["skills"])
+        completed_ids = []
+        unknown_courses = []
+        for course_text in split_list(row.get("completed_courses")):
+            course = find_course(course_text, courses)
+            if course is None:
+                unknown_courses.append(course_text)
+            else:
+                completed_ids.append(course["course_id"])
+                raw_skills = raw_skills + sorted(course["skills_taught"])
+
         conn.execute(
-            "INSERT INTO students (student_id, name) VALUES (?, ?)",
-            (row["student_id"], row["name"]),
+            "INSERT INTO students (student_id, name, completed_courses) VALUES (?, ?, ?)",
+            (row["student_id"], row["name"], "; ".join(completed_ids)),
         )
-        for r in normalize_skill_list(_split_skills(row["skills"])):
+        # A course name we don't recognize is saved as an unmapped skill so
+        # it shows up in the unmapped_skills report instead of being lost.
+        for course_text in unknown_courses:
+            conn.execute(
+                """INSERT INTO student_skills
+                   (student_id, raw_skill, cleaned, tag, matched_via, fuzzy_score)
+                   VALUES (?, ?, ?, NULL, 'unmapped', NULL)""",
+                (row["student_id"], "course: " + course_text, course_text.lower()),
+            )
+        for r in normalize_skill_list(raw_skills):
             conn.execute(
                 """INSERT INTO student_skills
                    (student_id, raw_skill, cleaned, tag, matched_via, fuzzy_score)
@@ -152,10 +178,47 @@ def get_unmapped_skills_df(conn: sqlite3.Connection) -> pd.DataFrame:
     return pd.read_sql_query("SELECT * FROM unmapped_skills", conn)
 
 
+def get_student_tags(conn: sqlite3.Connection) -> dict:
+    """Every student's set of canonical skill tags: {student_id: {tags}}."""
+    student_tags = {}
+    for row in conn.execute("SELECT student_id FROM students").fetchall():
+        sid = row["student_id"]
+        student_tags[sid] = _tag_set(conn, "student_skills", "student_id", sid)
+    return student_tags
+
+
+def get_ranked_courses_df(conn: sqlite3.Connection, courses) -> pd.DataFrame:
+    """One row per student per course they could take next, best first."""
+    student_tags = get_student_tags(conn)
+    students = conn.execute(
+        "SELECT student_id, name, completed_courses FROM students ORDER BY student_id"
+    ).fetchall()
+    rows = []
+    for student in students:
+        sid = student["student_id"]
+        completed_ids = split_list(student["completed_courses"])
+        for result in rank_courses(student_tags[sid], completed_ids, courses):
+            rows.append({
+                "student_id": sid,
+                "student_name": student["name"],
+                "course_id": result["course_id"],
+                "course_name": result["course_name"],
+                "weeks": result["weeks"],
+                "readiness_score": result["readiness_score"],
+                "prerequisites_met": "; ".join(result["prerequisites_met"]),
+                "prerequisites_missing": "; ".join(result["prerequisites_missing"]),
+                "new_skills": "; ".join(result["new_skills"]),
+            })
+    columns = ["student_id", "student_name", "course_id", "course_name", "weeks", "readiness_score",
+               "prerequisites_met", "prerequisites_missing", "new_skills"]
+    return pd.DataFrame(rows, columns=columns)
+
+
 def build_database(
     students_csv: Path,
     opportunities_csv: Path,
     db_path: Path = DEFAULT_DB_PATH,
+    courses_csv: Path = DEFAULT_COURSES_CSV,
 ) -> sqlite3.Connection:
     """End-to-end: fresh DB file, schema, taxonomy seed, load both CSVs,
     compute matches. This is what pipeline.py and the Streamlit app call."""
@@ -164,7 +227,7 @@ def build_database(
     conn = get_connection(db_path)
     init_schema(conn)
     seed_taxonomy(conn)
-    load_students(conn, pd.read_csv(students_csv))
+    load_students(conn, pd.read_csv(students_csv), load_courses(courses_csv))
     load_opportunities(conn, pd.read_csv(opportunities_csv))
     refresh_matches(conn)
     return conn
