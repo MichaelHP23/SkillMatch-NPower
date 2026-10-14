@@ -27,6 +27,7 @@ from src.db import (
     get_ranked_courses_df,
     get_ranked_matches_df,
     get_unmapped_skills_df,
+    to_safe_csv,
 )
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
@@ -50,16 +51,16 @@ def run_pipeline(
 
     output_df = get_ranked_matches_df(conn)
     output_csv.parent.mkdir(parents=True, exist_ok=True)
-    output_df.to_csv(output_csv, index=False)
+    to_safe_csv(output_df, output_csv)
 
     unmapped_df = get_unmapped_skills_df(conn)
     unmapped_csv.parent.mkdir(parents=True, exist_ok=True)
-    unmapped_df.to_csv(unmapped_csv, index=False)
+    to_safe_csv(unmapped_df, unmapped_csv)
 
     # Course side of the pipeline: which courses each student should take next.
     courses_df = get_ranked_courses_df(conn, load_courses(courses_csv))
     courses_output_csv.parent.mkdir(parents=True, exist_ok=True)
-    courses_df.to_csv(courses_output_csv, index=False)
+    to_safe_csv(courses_df, courses_output_csv)
 
     conn.close()
     return output_df

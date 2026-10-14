@@ -1,3 +1,4 @@
+import pytest
 import pandas as pd
 
 from src.courses import build_timeline, courses_teaching, load_courses, rank_courses, split_list
@@ -86,3 +87,13 @@ def test_unknown_completed_course_is_reported_as_unmapped(tmp_path):
     unmapped = get_unmapped_skills_df(conn)
     conn.close()
     assert list(unmapped["raw_skill"]) == ["course: Basket Weaving 101"]
+
+
+def test_load_courses_rejects_skill_not_in_taxonomy(tmp_path):
+    courses_csv = tmp_path / "courses.csv"
+    courses_csv.write_text(
+        "course_id,name,weeks,hours,prerequisites,skills_taught\n"
+        "X1,Typo Course,4,10,Underwater Basket Weaving,CompTIA A+\n"
+    )
+    with pytest.raises(ValueError, match="Underwater Basket Weaving"):
+        load_courses(courses_csv)

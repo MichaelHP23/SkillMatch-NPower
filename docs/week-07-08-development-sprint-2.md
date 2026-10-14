@@ -8,7 +8,7 @@
 ## Planned deliverables
 
 - [ ] Resolve the open scoring question from [Week 2](week-02-requirements-analysis.md) Section 8: whether required vs. preferred skills need different weighting, once real opportunity postings are reviewed
-- [ ] Add persistence beyond flat CSVs if warranted (e.g. SQLite), per the provisional plan in Week 2's data requirements
+- [x] Add persistence beyond flat CSVs if warranted (e.g. SQLite), per the provisional plan in Week 2's data requirements -- done early in Weeks 3-4 (`src/db.py`, `db/schema.sql`)
 - [ ] Refine the unmapped-skills workflow (`output/unmapped_skills.csv`) into something staff or the author can act on iteratively as the taxonomy grows
 - [ ] Any other backend integration needs identified during Sprint 1
 

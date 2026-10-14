@@ -13,7 +13,7 @@ Initial code setup and a working core pipeline already exist from the Proof of C
 
 - [ ] Swap mock `data/*.csv` for NPower's real student and opportunity data (once received from Robert)
 - [ ] Extend `EXPLICIT_MAP` in `src/taxonomy.py` to cover NPower's actual course/certification names
-- [ ] Handle real-data edge cases the mock data didn't exercise (malformed rows, missing fields, empty skill lists)
+- [ ] Handle real-data edge cases the mock data didn't exercise (malformed rows, missing fields, empty skill lists) -- partly done: missing columns, empty required cells, and repeated ids are now rejected with a clear message; still to be tried against real data
 - [ ] Expand test coverage to match
 
 ## Course pipeline (added this sprint)

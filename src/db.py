@@ -14,7 +14,7 @@ from pathlib import Path
 
 import pandas as pd
 
-from src.courses import DEFAULT_COURSES_CSV, find_course, load_courses, rank_courses, split_list
+from src.courses import DEFAULT_COURSES_CSV, check_columns, find_course, load_courses, rank_courses, split_list
 from src.scoring import score_match
 from src.taxonomy import CANONICAL_TAGS, EXPLICIT_MAP, normalize_skill_list
 
@@ -222,12 +222,43 @@ def build_database(
 ) -> sqlite3.Connection:
     """End-to-end: fresh DB file, schema, taxonomy seed, load both CSVs,
     compute matches. This is what pipeline.py and the Streamlit app call."""
+    # Read and check every CSV before touching the database, so a bad file
+    # is reported without leaving a half-built database behind.
+    courses = load_courses(courses_csv)
+    students_df = pd.read_csv(students_csv)
+    check_columns(students_df, ["student_id", "name", "skills"], ["student_id", "name"], "Students")
+    opportunities_df = pd.read_csv(opportunities_csv)
+    check_columns(
+        opportunities_df, ["opportunity_id", "title", "required_skills"],
+        ["opportunity_id", "title"], "Opportunities",
+    )
+
     if db_path.exists():
         db_path.unlink()
     conn = get_connection(db_path)
-    init_schema(conn)
-    seed_taxonomy(conn)
-    load_students(conn, pd.read_csv(students_csv), load_courses(courses_csv))
-    load_opportunities(conn, pd.read_csv(opportunities_csv))
-    refresh_matches(conn)
+    try:
+        init_schema(conn)
+        seed_taxonomy(conn)
+        load_students(conn, students_df, courses)
+        load_opportunities(conn, opportunities_df)
+        refresh_matches(conn)
+    except Exception:
+        conn.close()  # otherwise the file stays locked and can't be deleted
+        raise
     return conn
+
+
+def to_safe_csv(df: pd.DataFrame, path: Path | None = None):
+    """df.to_csv(), but safe to open in Excel/Sheets.
+
+    A spreadsheet runs any cell that starts with = + - or @ as a formula.
+    Names, titles and raw skills come straight from the input CSVs, so a
+    cell like "=HYPERLINK(...)" would run on the staff member's machine.
+    Putting a ' in front makes the spreadsheet show it as plain text.
+    """
+    safe = df.copy()
+    for col in safe.columns:
+        safe[col] = safe[col].map(
+            lambda v: "'" + v if isinstance(v, str) and v.startswith(("=", "+", "-", "@", "\t", "\r")) else v
+        )
+    return safe.to_csv(path, index=False)

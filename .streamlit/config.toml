@@ -1,0 +1,4 @@
+# Streamlit sends anonymous usage statistics to its vendor by default.
+# This tool handles student records, so nothing leaves the machine (NFR-7).
+[browser]
+gatherUsageStats = false

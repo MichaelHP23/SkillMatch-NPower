@@ -25,3 +25,11 @@ def test_unrelated_skill_is_left_unmapped():
     result = normalize_skill("Underwater Basket Weaving")
     assert result.canonical_tag is None
     assert result.matched_via == "unmapped"
+
+
+def test_short_or_partial_strings_are_not_fuzzy_matched():
+    # A short string is contained in many taxonomy entries ("C" is in
+    # "excel"), but that does not make it the same skill.
+    for raw in ["C", "R", "IT", "Java", "Excel VBA"]:
+        result = normalize_skill(raw)
+        assert result.canonical_tag is None, f"{raw!r} wrongly mapped to {result.canonical_tag!r}"

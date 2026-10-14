@@ -16,6 +16,7 @@ close the gap to a chosen opportunity.
 from __future__ import annotations
 
 import tempfile
+from contextlib import closing
 from pathlib import Path
 
 import altair as alt
@@ -29,6 +30,7 @@ from src.db import (
     get_ranked_matches_df,
     get_student_tags,
     get_unmapped_skills_df,
+    to_safe_csv,
 )
 
 PROJECT_ROOT = Path(__file__).resolve().parent
@@ -88,15 +90,21 @@ if run_clicked:
         opportunities_csv = _resolve_csv(opportunities_file, SAMPLE_OPPORTUNITIES_CSV, tmp_path, "opportunities.csv")
         courses_csv = _resolve_csv(courses_file, DEFAULT_COURSES_CSV, tmp_path, "courses.csv")
 
-        with st.spinner("Normalizing skills and scoring matches..."):
-            courses = load_courses(courses_csv)
-            conn = build_database(students_csv, opportunities_csv, courses_csv=courses_csv)
-            st.session_state.ranked_df = get_ranked_matches_df(conn)
-            st.session_state.unmapped_df = get_unmapped_skills_df(conn)
-            st.session_state.courses_df = get_ranked_courses_df(conn, courses)
-            st.session_state.student_tags = get_student_tags(conn)
-            st.session_state.courses = courses
-            conn.close()
+        try:
+            with st.spinner("Normalizing skills and scoring matches..."):
+                courses = load_courses(courses_csv)
+                # The database goes in the temporary folder, not db/, so uploaded
+                # student records are deleted as soon as the results are read (NFR-7).
+                db_path = tmp_path / "skills_match.db"
+                with closing(build_database(students_csv, opportunities_csv, db_path, courses_csv)) as conn:
+                    st.session_state.ranked_df = get_ranked_matches_df(conn)
+                    st.session_state.unmapped_df = get_unmapped_skills_df(conn)
+                    st.session_state.courses_df = get_ranked_courses_df(conn, courses)
+                    st.session_state.student_tags = get_student_tags(conn)
+                    st.session_state.courses = courses
+        except ValueError as error:
+            # Wrong columns, repeated ids, an unreadable file, etc.
+            st.error(f"Could not run the matcher. {error}")
 
 ranked_df: pd.DataFrame | None = st.session_state.ranked_df
 unmapped_df: pd.DataFrame | None = st.session_state.unmapped_df
@@ -124,7 +132,7 @@ else:
         hide_index=True,
         column_config={
             "match_score": st.column_config.ProgressColumn(
-                "Match", min_value=0, max_value=1, format="%.0f%%"
+                "Match", min_value=0, max_value=1, format="percent"
             ),
         },
     )
@@ -145,7 +153,7 @@ else:
         hide_index=True,
         column_config={
             "readiness_score": st.column_config.ProgressColumn(
-                "Readiness", min_value=0, max_value=1, format="%.0f%%"
+                "Readiness", min_value=0, max_value=1, format="percent"
             ),
         },
     )
@@ -172,7 +180,9 @@ else:
                 "missing_skill": skill,
                 "taught_by": "; ".join(teaching) if teaching else "(no NPower course teaches this)",
             })
-        st.dataframe(pd.DataFrame(gap_rows), use_container_width=True, hide_index=True)
+        # st.table draws a plain HTML table, which is simpler for screen
+        # readers and keyboard users than st.dataframe's canvas grid.
+        st.table(pd.DataFrame(gap_rows).set_index("missing_skill"))
 
         steps, still_missing = build_timeline(
             st.session_state.student_tags[student_label], missing_skills, st.session_state.courses
@@ -189,10 +199,9 @@ else:
                 tooltip=["course_name", "start_week", "end_week", "skills_gained"],
             )
             st.altair_chart(chart, use_container_width=True)
-            st.dataframe(
-                timeline_df[["course_name", "start_week", "end_week", "skills_gained"]],
-                use_container_width=True,
-                hide_index=True,
+            st.caption("The same timeline as a table:")
+            st.table(
+                timeline_df[["course_name", "start_week", "end_week", "skills_gained"]].set_index("course_name")
             )
             st.info(f"Ready for this opportunity after about {steps[-1]['end_week']} weeks of courses.")
         if len(still_missing) > 0:
@@ -203,13 +212,13 @@ else:
     st.dataframe(ranked_df, use_container_width=True, hide_index=True)
     st.download_button(
         "Download ranked_matches.csv",
-        data=ranked_df.to_csv(index=False),
+        data=to_safe_csv(ranked_df),
         file_name="ranked_matches.csv",
         mime="text/csv",
     )
     st.download_button(
         "Download ranked_courses.csv",
-        data=courses_df.to_csv(index=False),
+        data=to_safe_csv(courses_df),
         file_name="ranked_courses.csv",
         mime="text/csv",
     )

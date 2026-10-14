@@ -74,7 +74,7 @@ db/
   schema.sql    # SQLite schema (tables + views)
 data/           # input CSVs (mock data for now) + courses.csv (NPower course list)
 output/         # generated ranked_matches.csv, ranked_courses.csv, unmapped_skills.csv (gitignored)
-tests/          # pytest unit tests for taxonomy, scoring, and db
+tests/          # pytest tests for taxonomy, scoring, courses, db, and the app
 docs/           # weekly capstone journal (requirements, architecture, etc.)
 ```
 
@@ -106,6 +106,10 @@ python -m src.pipeline --students path/to/real_students.csv --opportunities path
 The students CSV can have an optional `completed_courses` column (course ids
 or course names from `courses.csv`, separated by `;`).
 
+The CSVs are checked before anything is loaded. A missing column, an empty
+id/name/title, a repeated id, or a skill in the course list that is not in
+the taxonomy stops the run with a message saying what to fix.
+
 ## Run the staff-facing UI (Streamlit)
 
 ```bash
@@ -122,3 +126,49 @@ student's recommended courses and a pathway timeline to a chosen opportunity.
 ```bash
 pytest
 ```
+
+## Privacy and data handling
+
+The tool runs locally, has no accounts, and sends nothing to an external
+service. The Streamlit app keeps uploaded student records only in a
+temporary folder that is deleted after each run. The command-line pipeline
+leaves a database and CSVs in `db/` and `output/` until you delete them.
+Details, deletion steps, and known limits are in [`PRIVACY.md`](PRIVACY.md).
+
+## Accessibility
+
+What has been done: every input has a text label, bad input files give a
+plain-language error message instead of a code traceback, scores are shown
+as numbers and not only as bars, and the gap and timeline tables are real
+HTML tables (the timeline chart has the same data in a table under it).
+
+Known limits: the larger result grids use Streamlit's `st.dataframe`, which
+is drawn on a canvas. It exposes its cells to assistive technology, but
+scores appear there as raw numbers (0.6667) instead of percentages, and I
+have not tried it with a screen reader; the CSV downloads are the
+alternative. Section headings jump from level 1 to level 3. The app has not
+been audited against WCAG, so I make no compliance claim.
+
+## AI and tool use
+
+**In the application:** none. The tool does not use AI or call any external
+service when it runs. Skill matching is a lookup table plus `rapidfuzz`
+string similarity, which is a fixed formula, not a trained model. Every
+score can be traced to the matched and missing skills shown next to it.
+
+**In development:** I designed and built this project. I used Claude
+(Anthropic), mainly through Claude Code, for research and brainstorming, to
+explain concepts I was stuck on, and to suggest or draft code where I was
+stuck, which I reviewed before keeping. The October 2026 hardening pass
+(CSV checks, spreadsheet-safe exports, the app's temporary database, the
+tests for those, and `PRIVACY.md`) was drafted with Claude Code and reviewed
+by me. The weekly journal in `docs/` notes where AI helped as it happened.
+
+Libraries: pandas, rapidfuzz, Streamlit (with Altair for the timeline
+chart), SQLite through Python's standard library, and pytest.
+
+## License
+
+All rights reserved -- see [`LICENSE`](LICENSE). The repository is public
+for course review; it is not open source. NPower's course information and
+the third-party libraries are not covered by that notice.

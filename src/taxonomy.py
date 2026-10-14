@@ -134,7 +134,11 @@ def normalize_skill(raw: str) -> NormalizationResult:
     if cleaned in EXPLICIT_MAP:
         return NormalizationResult(raw, cleaned, EXPLICIT_MAP[cleaned], "explicit")
 
-    match = process.extractOne(cleaned, EXPLICIT_MAP.keys(), scorer=fuzz.WRatio)
+    # fuzz.ratio compares the two whole strings. WRatio also scores partial
+    # (substring) matches, which mapped "C" to Microsoft Excel and "IT" to
+    # CompTIA Security+. A partial name now stays unmapped and shows up in
+    # the unmapped-skills report, where it can be added to EXPLICIT_MAP.
+    match = process.extractOne(cleaned, EXPLICIT_MAP.keys(), scorer=fuzz.ratio)
     if match is not None:
         best_key, score, _ = match
         if score >= FUZZY_MATCH_THRESHOLD:

@@ -32,6 +32,22 @@ def split_list(cell):
     return items
 
 
+def check_columns(df, required, must_fill, label):
+    """Stop early, with a message staff can act on, if a CSV is missing a
+    column, has an empty required cell, or repeats an id. must_fill[0] is
+    the id column."""
+    missing = [col for col in required if col not in df.columns]
+    if missing:
+        raise ValueError(f"{label} CSV is missing column(s): {', '.join(missing)}")
+    for col in must_fill:
+        if df[col].isna().any():
+            raise ValueError(f"{label} CSV has a row with an empty {col}")
+    ids = df[must_fill[0]].astype(str)
+    repeated = sorted(ids[ids.duplicated()].unique())
+    if repeated:
+        raise ValueError(f"{label} CSV repeats {must_fill[0]}: {', '.join(repeated)}")
+
+
 def to_tags(raw_skills):
     """Normalize a list of raw skill strings into a set of canonical tags."""
     tags = set()
@@ -45,6 +61,24 @@ def to_tags(raw_skills):
 def load_courses(courses_csv=DEFAULT_COURSES_CSV):
     """Read courses.csv into a list of dictionaries, one per course."""
     df = pd.read_csv(courses_csv)
+    check_columns(
+        df, ["course_id", "name", "weeks", "prerequisites", "skills_taught"],
+        ["course_id", "name", "weeks"], "Courses",
+    )
+    # Every skill in the course list has to be in the taxonomy. to_tags()
+    # drops anything it can't map, so a typo here would silently remove a
+    # prerequisite instead of being noticed.
+    unknown = []
+    for _, row in df.iterrows():
+        for raw in split_list(row["prerequisites"]) + split_list(row["skills_taught"]):
+            if normalize_skill(raw).canonical_tag is None:
+                unknown.append(f"{row['course_id']}: {raw}")
+    if unknown:
+        raise ValueError(
+            "Courses CSV has skills that are not in the taxonomy (src/taxonomy.py) -- "
+            + "; ".join(unknown)
+        )
+
     courses = []
     for _, row in df.iterrows():
         course = {

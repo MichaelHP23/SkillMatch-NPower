@@ -1,0 +1,19 @@
+Copyright (c) 2026 Michael Pink. All rights reserved.
+
+This repository is public so it can be reviewed for CISC 4900. It is not
+open source. No permission is granted to copy, modify, redistribute, or use
+this code or documentation, in whole or in part, without written permission
+from the author.
+
+What this notice does not cover:
+
+- NPower's name, program names, and the course information in
+  data/courses.csv belong to NPower. They are included for this capstone
+  project and are not mine to license.
+- Certification and product names (CompTIA, Microsoft, AWS, Google, Tableau,
+  and others) are trademarks of their owners and are used only to name
+  skills.
+- Third-party libraries are not included in this repository. They are
+  installed from requirements.txt and stay under their own licenses
+  (pandas: BSD-3-Clause, rapidfuzz: MIT, pytest: MIT, streamlit: Apache-2.0,
+  and streamlit's dependency altair: BSD-3-Clause).
