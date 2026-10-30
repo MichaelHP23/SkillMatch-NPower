@@ -33,6 +33,9 @@ Master Overview Deck as the first source of real course data.
   the gap to a target opportunity.
 - The Streamlit app shows both: "Recommended NPower courses" and "Pathway
   timeline".
+- Based on partner feedback from Robert, a short practice readiness quiz
+  (advisory only, not saved) now appears next to courses that teach CompTIA
+  Network+; sample questions and scoring are in `src/quiz.py`.
 
 **Assumptions I made (need to confirm with Robert)**
 
