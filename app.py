@@ -32,7 +32,7 @@ from src.db import (
     get_unmapped_skills_df,
     to_safe_csv,
 )
-from src.quiz import QUIZZES, READY_THRESHOLD, score_quiz
+from src.quiz import EXAM, READY_THRESHOLD, score_quiz
 
 PROJECT_ROOT = Path(__file__).resolve().parent
 SAMPLE_STUDENTS_CSV = PROJECT_ROOT / "data" / "sample_students.csv"
@@ -159,27 +159,23 @@ else:
         },
     )
 
-    # Practice quiz for recommended courses that teach a skill with a quiz.
-    # Advisory only, and answers are never saved (kept in this session only).
-    for tag, questions in QUIZZES.items():
-        teaching = student_courses[student_courses["new_skills"].apply(lambda cell: tag in split_list(cell))]
-        if len(teaching) == 0:
-            continue
-        with st.expander(f"Check your readiness: {tag} ({', '.join(teaching['course_name'])})"):
-            st.caption("A short practice quiz to self-check before enrolling. Sample questions only.")
-            with st.form(f"quiz_{tag}_{student_label}"):
-                answers = []
-                for i, question in enumerate(questions):
-                    choice = st.radio(question["question"], question["choices"], index=None, key=f"q_{tag}_{student_label}_{i}")
-                    answers.append(None if choice is None else question["choices"].index(choice))
-                submitted = st.form_submit_button("Submit answers")
-            if submitted:
-                score = score_quiz(questions, answers)
-                st.write(f"Score: {round(score * len(questions))} of {len(questions)} correct ({score:.0%}).")
-                if score >= READY_THRESHOLD:
-                    st.success("Looks like a good fit for this course.")
-                else:
-                    st.warning("Might want to review this topic first. You can still enroll.")
+    # Practice aptitude exam covering all course offerings. Advisory only,
+    # and answers are never saved (kept in this session only).
+    with st.expander("Check your readiness: practice aptitude exam"):
+        st.caption("A practice exam covering all NPower course areas, to self-check before enrolling. Sample questions only.")
+        with st.form(f"exam_{student_label}"):
+            answers = []
+            for i, question in enumerate(EXAM):
+                choice = st.radio(question["question"], question["choices"], index=None, key=f"q_{student_label}_{i}")
+                answers.append(None if choice is None else question["choices"].index(choice))
+            submitted = st.form_submit_button("Submit answers")
+        if submitted:
+            score = score_quiz(EXAM, answers)
+            st.write(f"Score: {round(score * len(EXAM))} of {len(EXAM)} correct ({score:.0%}).")
+            if score >= READY_THRESHOLD:
+                st.success("Looks like a good fit for NPower's technical courses.")
+            else:
+                st.warning("Might want to review the basics first. You can still enroll.")
 
     st.divider()
     st.subheader("Pathway timeline")

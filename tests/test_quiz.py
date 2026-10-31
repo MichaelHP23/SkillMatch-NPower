@@ -1,5 +1,4 @@
-from src.quiz import QUIZZES, score_quiz
-from src.taxonomy import CANONICAL_TAGS
+from src.quiz import EXAM, score_quiz
 
 
 def test_score_quiz_computes_fraction_correct():
@@ -18,8 +17,8 @@ def test_score_quiz_handles_no_questions():
     assert score_quiz([], []) == 0.0
 
 
-def test_quiz_tags_are_canonical_and_answers_are_valid():
-    for tag, questions in QUIZZES.items():
-        assert tag in CANONICAL_TAGS
-        for question in questions:
-            assert 0 <= question["correct_choice_index"] < len(question["choices"])
+def test_exam_is_robert_sized_and_answers_are_valid():
+    # Robert asked for one exam of roughly 20-30 questions.
+    assert 20 <= len(EXAM) <= 30
+    for question in EXAM:
+        assert 0 <= question["correct_choice_index"] < len(question["choices"])
